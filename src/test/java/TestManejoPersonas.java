@@ -1,20 +1,49 @@
+
 import datos.Conexion;
 import datos.PersonaDAO;
 import domain.Persona;
 
+import java.sql.*;
 import java.util.List;
 
 public class TestManejoPersonas {
     public static void main(String[] args) {
-        PersonaDAO personaDao = new PersonaDAO();
-        Persona persona2 = new Persona("Test","Test","Email","Telefono");
-        personaDao.insertar(persona2);
-        persona2.setIdPersona(2);
-        personaDao.actualizar(persona2);
-        Persona persona3 = new Persona(10);
-        personaDao.borrar(persona3);
-        List<Persona> personas=personaDao.seleccionar();
-        personas.forEach(persona -> System.out.println(persona));
+        Connection conexion= null;
+        try {
+            conexion = Conexion.getConnection();
+            if(conexion.getAutoCommit()){
+                conexion.setAutoCommit(false);
+            }
+            //Realizar el comienzo de las transacciones
+            PersonaDAO personaDao = new PersonaDAO(conexion);
+            //Actualizar el id 4
+            Persona cambioPersona = new Persona();
+            cambioPersona.setIdPersona(4);
+            cambioPersona.setNombre("Carla Ivonne");
+            cambioPersona.setApellido("Gomez");
+            cambioPersona.setEmail("kgomes@hotmail.com");
+            cambioPersona.setTelefono("555585455");
+            personaDao.actualizar(cambioPersona);
+
+            //Insert
+
+            Persona nuevaPersona = new Persona();
+            nuevaPersona.setNombre("Carlos");
+            nuevaPersona.setApellido("Gomez");
+            personaDao.insertar(nuevaPersona);
+            conexion.commit();
+
+        }
+        catch (SQLException e){
+            e.printStackTrace(System.out);
+            System.out.println("Entramos al rollback");
+            try {
+                conexion.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace(System.out);
+            }
+
+        }
 
 
     }
